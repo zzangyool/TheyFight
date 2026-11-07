@@ -1,133 +1,193 @@
-<!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity Web Player | 옆집 싸움구경</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
-  </head>
-  <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
-        </div>
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>옆집 싸움구경</title>
+  <meta name="description" content="버섯들이 뿅망치와 물총으로 벌이는 최대 4인 온라인 난투 게임. Windows용 무료 다운로드.">
+  <meta property="og:title" content="옆집 싸움구경">
+  <meta property="og:description" content="버섯들이 뿅망치와 물총으로 벌이는 최대 4인 온라인 난투 게임">
+  <meta property="og:image" content="img/hero.jpg">
+  <link rel="icon" href="img/icon_hammer.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fff8ec;
+      --card: #ffffff;
+      --ink: #1f1a29;
+      --muted: #6b6478;
+      --yellow: #ffb820;
+      --yellow-dark: #c98400;
+      --coral: #ff6b6b;
+      --sky: #59bfff;
+      --line: #eadfca;
+      --shadow: 0 6px 0 rgba(31, 26, 41, 0.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #1c1824;
+        --card: #272132;
+        --ink: #f6f0e4;
+        --muted: #b6adc4;
+        --line: #3a3248;
+        --shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Jua", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      line-height: 1.55;
+      font-size: 18px;
+    }
+    a { color: inherit; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+    /* 첫 화면 */
+    .hero { padding: 40px 0 28px; }
+    .hero-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 32px; align-items: center; }
+    .title { font-size: clamp(44px, 8vw, 76px); line-height: 1.05; margin: 0 0 6px; letter-spacing: -1px; }
+    .title .icons { display: inline-flex; gap: 6px; vertical-align: middle; margin-left: 6px; }
+    .title .icons img { width: 0.7em; height: 0.7em; object-fit: contain; }
+    .tag { color: var(--coral); font-size: 20px; margin: 0 0 14px; }
+    .lead { color: var(--muted); font-size: 20px; margin: 0 0 24px; }
+    .download {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--yellow); color: #1f1a29; text-decoration: none;
+      font-size: 28px; padding: 16px 30px; border-radius: 18px;
+      box-shadow: 0 6px 0 var(--yellow-dark); transition: transform .08s, box-shadow .08s;
+    }
+    .download:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--yellow-dark); }
+    .download:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--yellow-dark); }
+    .download svg { width: 28px; height: 28px; }
+    .meta { color: var(--muted); font-size: 16px; margin-top: 12px; }
+    .hero-shot { border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); border: 3px solid var(--line); }
+    .hero-shot img { display: block; width: 100%; height: auto; }
+
+    /* 카드 */
+    section { padding: 26px 0; }
+    h2 { font-size: 32px; margin: 0 0 16px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: var(--shadow); }
+    .card h3 { margin: 0 0 6px; font-size: 22px; font-weight: normal; }
+    .card p { margin: 0; color: var(--muted); font-size: 17px; }
+    .num { display: inline-flex; width: 34px; height: 34px; border-radius: 50%; background: var(--sky); color: #fff;
+           align-items: center; justify-content: center; font-size: 20px; margin-bottom: 8px; }
+    .note { margin-top: 14px; background: var(--card); border: 2px dashed var(--line); border-radius: 14px; padding: 14px 18px; color: var(--muted); font-size: 16px; }
+    .note b { color: var(--ink); font-weight: normal; }
+
+    /* 조작법 / 규칙 */
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 17px; }
+    td { padding: 8px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    td:first-child { color: var(--yellow-dark); white-space: nowrap; padding-right: 14px; width: 1%; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) td:first-child { color: var(--yellow); } }
+    tr:last-child td { border-bottom: 0; }
+
+    /* 스크린샷 */
+    .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; display: block; border-radius: 14px; border: 2px solid var(--line); }
+    .shots figcaption { color: var(--muted); font-size: 15px; margin-top: 6px; text-align: center; }
+
+    footer { color: var(--muted); font-size: 14px; padding: 30px 0 44px; text-align: center; }
+
+    @media (max-width: 820px) {
+      .hero-grid, .two { grid-template-columns: 1fr; }
+      .cards, .shots { grid-template-columns: 1fr; }
+      .hero { padding-top: 24px; }
+      .download { font-size: 24px; padding: 14px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1 class="title">옆집 싸움구경<span class="icons"><img src="img/icon_hammer.png" alt=""><img src="img/icon_watergun.png" alt=""></span></h1>
+        <p class="tag">매우 폭력적이고 자극적인 난투극 (농담이에요)</p>
+        <p class="lead">조그만 버섯들이 동네 한복판에서 뿅망치와 물총으로 서로를 튕겨 냅니다. 친구 최대 4명과 참가 코드 하나로 바로 같이 놀 수 있어요.</p>
+        <a class="download" href="https://github.com/zzangyool/TheyFight/releases/latest/download/TheyFight-Windows.zip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m6 10 6 6 6-6"/><path d="M4 20h16"/></svg>
+          Windows용 다운로드
+        </a>
+        <div class="meta">무료 · Windows 10/11 (64비트) · <span id="ver">v0.1.0</span> · 약 <span id="size">54</span> MB</div>
       </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-logo-title-footer"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">옆집 싸움구경</div>
-      </div>
+      <div class="hero-shot"><img src="img/hero.jpg" alt="빨간 갓 버섯 캐릭터가 뿅망치를 들고 서 있는 게임 화면" width="1280" height="720"></div>
     </div>
-    <script>
-      var canvas = document.querySelector("#unity-canvas");
+  </header>
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-      function unityShowBanner(msg, type) {
-        var warningBanner = document.querySelector("#unity-warning");
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-        }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
-      }
+  <main class="wrap">
+    <section>
+      <h2>설치하고 실행하기</h2>
+      <div class="cards">
+        <div class="card"><div class="num">1</div><h3>내려받기</h3><p>위의 노란 버튼으로 <b>TheyFight-Windows.zip</b> 을 받아요.</p></div>
+        <div class="card"><div class="num">2</div><h3>압축 풀기</h3><p>zip 파일을 오른쪽 클릭 → <b>압축 풀기</b>. 바탕화면 같은 편한 곳에 풀어 주세요.</p></div>
+        <div class="card"><div class="num">3</div><h3>실행</h3><p>풀린 <b>TheyFight</b> 폴더의 <b>TheGame.exe</b> 를 실행해요.</p></div>
+      </div>
+      <div class="note">
+        <b>"Windows의 PC 보호" 창이 뜨면</b> → <b>추가 정보</b> → <b>실행</b>을 눌러 주세요. 개인이 만든 게임이라 서명이 없어서 나오는 안내예요.<br>
+        <b>방장</b>이 처음 방을 만들 때 방화벽 허용 창이 뜨면 <b>허용</b>을 눌러 주세요.
+      </div>
+    </section>
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/WebGL.loader.js";
-      var config = {
-        arguments: [],
-        dataUrl: buildUrl + "/WebGL.data.unityweb",
-        frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
-        codeUrl: buildUrl + "/WebGL.wasm.unityweb",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "옆집 싸움구경",
-        productVersion: "0.1.0",
-        showBanner: unityShowBanner,
-        // errorHandler: function(err, url, line) {
-        //    alert("error " + err + " occurred at line " + line);
-        //    // Return 'true' if you handled this error and don't want Unity
-        //    // to process it further, 'false' otherwise.
-        //    return true;
-        // },
-      };
+    <section>
+      <h2>친구와 같이 놀기</h2>
+      <div class="cards">
+        <div class="card"><div class="num">1</div><h3>방 만들기</h3><p>한 명이 메뉴에서 <b>방 만들기!</b> 를 눌러요. 이 사람의 PC가 방이 돼요.</p></div>
+        <div class="card"><div class="num">2</div><h3>참가 코드 보내기</h3><p>화면 왼쪽 위의 <b>참가 코드</b>를 친구에게 보내요. Esc 화면의 <b>코드 복사</b> 버튼도 있어요.</p></div>
+        <div class="card"><div class="num">3</div><h3>참가하기</h3><p>친구는 코드를 입력하고 <b>참가하기</b>. 포트 열기나 IP 설정은 필요 없어요.</p></div>
+      </div>
+      <div class="note">모두 <b>같은 버전</b>이어야 같은 방에 들어갈 수 있어요. 새 버전이 나오면 다 같이 다시 받아 주세요.</div>
+    </section>
 
-      // By default, Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
+    <section class="two">
+      <div class="card">
+        <h2>조작법</h2>
+        <table>
+          <tr><td>WASD</td><td>이동</td></tr>
+          <tr><td>마우스</td><td>둘러보기</td></tr>
+          <tr><td>Shift</td><td>달리기</td></tr>
+          <tr><td>Space</td><td>점프</td></tr>
+          <tr><td>좌클릭</td><td>공격 (물총은 누르고 있기)</td></tr>
+          <tr><td>1 · 2 · 휠</td><td>뿅망치 / 물총 바꾸기</td></tr>
+          <tr><td>E</td><td>통·상자 잡기 / 던지기</td></tr>
+          <tr><td>Tab</td><td>점수판</td></tr>
+          <tr><td>Esc</td><td>일시정지 (감도, 소리 크기)</td></tr>
+        </table>
+        <p class="meta">게임패드도 돼요.</p>
+      </div>
+      <div class="card">
+        <h2>규칙</h2>
+        <table>
+          <tr><td>목표</td><td>상대를 KO 시켜서 KO 수를 올리기</td></tr>
+          <tr><td>뿅망치</td><td>앞쪽 상대를 크게 튕겨 내요 (15 데미지)</td></tr>
+          <tr><td>물총</td><td>약하지만 계속 쏠 수 있어요. 물은 <b>우물 근처</b>에서만 다시 차요</td></tr>
+          <tr><td>통·상자</td><td>잡으면 방패, 던지면 무기</td></tr>
+          <tr><td>버섯 점프대</td><td>밟으면 지붕까지 날아가요</td></tr>
+          <tr><td>자동차</td><td>경적이 울리면 피하세요!</td></tr>
+          <tr><td>주민</td><td>하얀 양송이 주민은 맞으면 도망가요 (점수와 무관)</td></tr>
+        </table>
+      </div>
+    </section>
 
-      // If you would like all file writes inside Unity Application.persistentDataPath
-      // directory to automatically persist so that the contents are remembered when
-      // the user revisits the site the next time, uncomment the following line:
-      // config.autoSyncPersistentDataPath = true;
-      // This autosyncing is currently not the default behavior to avoid regressing
-      // existing user projects that might rely on the earlier manual
-      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
-      // expected to change.
+    <section>
+      <h2>스크린샷</h2>
+      <div class="shots">
+        <figure><img src="img/menu.jpg" alt="게임 메뉴 화면" loading="lazy" width="1280" height="559"><figcaption>메뉴</figcaption></figure>
+        <figure><img src="img/play.jpg" alt="뿅망치를 든 1인칭 플레이 화면" loading="lazy" width="1280" height="559"><figcaption>1인칭 시점</figcaption></figure>
+        <figure><img src="img/resident.jpg" alt="하얀 양송이 주민" loading="lazy" width="1280" height="720"><figcaption>동네 주민</figcaption></figure>
+      </div>
+    </section>
+  </main>
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-        document.querySelector("#unity-container").className = "unity-mobile";
-        canvas.className = "unity-mobile";
-
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
-
-
-      } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
-      }
-
-      document.querySelector("#unity-loading-bar").style.display = "block";
-
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
-
-              }).catch((message) => {
-                alert(message);
-              });
-            };
-
-      document.body.appendChild(script);
-
-    </script>
-  </body>
+  <footer class="wrap">
+    옆집 싸움구경 · Unity로 만들었어요 · 글꼴: 주아(Jua), SIL Open Font License 1.1
+  </footer>
+</body>
 </html>
